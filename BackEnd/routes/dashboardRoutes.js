@@ -10,16 +10,10 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'Accès interdit, vous devez être administrateur' });
     }
 
-   
-    // Total des livres - Utiliser la première ligne du premier élément
+    // Total des livres
     const totalBooksQuery = 'SELECT COUNT(*) AS totalBooks FROM books';
-    console.log('Executing totalBooksQuery');
     const totalBooksResult = await pool.query(totalBooksQuery);
-    console.log('Total Books Query Raw Result:', totalBooksResult);
-    
-    // Extraction correcte du nombre de livres
     const totalBooks = totalBooksResult[0][0].totalBooks;
-    console.log('Total Books:', totalBooks);
 
     // Total des livres empruntés
     const loanedBooksQuery = 'SELECT COUNT(*) AS loanedBooks FROM loans WHERE status = "active"';
@@ -30,6 +24,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const totalUsersQuery = 'SELECT COUNT(*) AS totalUsers FROM users';
     const totalUsersResult = await pool.query(totalUsersQuery);
     const totalUsers = totalUsersResult[0][0].totalUsers;
+    
     // Emprunts récents (dernière semaine)
     const recentLoansQuery = `
       SELECT COUNT(*) AS recentLoans 
@@ -51,7 +46,7 @@ router.get('/', authenticateToken, async (req, res) => {
     `;
     const activityResult = await pool.query(activityQuery);
     
-    // Mapping des jours français
+    // Mapping des jours anglais vers l'abréviation
     const dayMap = {
       'Monday': 'Mon',
       'Tuesday': 'Tue',
@@ -64,27 +59,33 @@ router.get('/', authenticateToken, async (req, res) => {
 
     // Préparer les données pour le graphique
     const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    
+    // Initialiser toutes les valeurs à 0
+    const activityCounts = {
+      'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0
+    };
+    
+    // Remplir avec les données réelles
+    activityResult[0].forEach(row => {
+      if (row.day && dayMap[row.day]) {
+        activityCounts[dayMap[row.day]] = Number(row.loans);
+      }
+    });
+    
+    // Construire l'objet de données pour le graphique
     const activityData = {
       labels: daysOrder,
       datasets: [
         {
-          data: daysOrder.map(dayFr => {
-            // Trouver le jour anglais correspondant
-            const dayEn = Object.keys(dayMap).find(key => dayMap[key] === dayFr);
-            
-            // Rechercher les données de prêts pour ce jour
-            const matchingDay = dayEn ? activityResult.find(row => 
-              row.day && row.day.toLowerCase() === dayEn.toLowerCase()
-            ) : null;
-
-            // Retourner le nombre de prêts ou 0
-            return matchingDay ? matchingDay.loans : 0;
-          }),
+          data: daysOrder.map(day => activityCounts[day]),
           color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
           strokeWidth: 2
         }
       ]
     };
+
+    // Log pour déboguer
+    console.log('Activity data being sent:', JSON.stringify(activityData, null, 2));
 
     res.json({
       totalBooks,

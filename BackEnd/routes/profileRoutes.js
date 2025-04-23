@@ -22,7 +22,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     
     const [users] = await pool.query(
-      'SELECT id, username, email, telephone, cin, is_admin FROM users WHERE id = ?',
+      'SELECT id, username, email, telephone, cin, is_admin, profile_image FROM users WHERE id = ?',
       [userId]
     );
     
@@ -39,6 +39,7 @@ router.get('/', authenticateToken, async (req, res) => {
       email: user.email,
       telephone: user.telephone,
       cin: user.cin,
+      profileImage: user.profile_image,
       isAdmin: user.is_admin === 1 ? true : false // Convert to boolean and ensure it's named isAdmin
     });
   } catch (error) {
@@ -96,7 +97,7 @@ router.put('/', authenticateToken, async (req, res) => {
     
     // Get updated user data
     const [users] = await pool.query(
-      'SELECT id, username, email, telephone, cin, is_admin FROM users WHERE id = ?',
+      'SELECT id, username, email, telephone, cin, is_admin, profile_image FROM users WHERE id = ?',
       [userId]
     );
     
@@ -109,6 +110,7 @@ router.put('/', authenticateToken, async (req, res) => {
       email: user.email,
       telephone: user.telephone,
       cin: user.cin,
+      profileImage: user.profile_image,
       isAdmin: user.is_admin === 1 ? true : false // Convert to boolean and ensure it's named isAdmin
     });
   } catch (error) {
@@ -149,6 +151,56 @@ router.put('/change-password', authenticateToken, async (req, res) => {
     await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId]);
     
     res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update profile image URL
+router.post('/image', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { imageUrl } = req.body;
+    
+    if (!imageUrl) {
+      return res.status(400).json({ message: 'Image URL is required' });
+    }
+    
+    // Update the profile image URL in database
+    await pool.query(
+      'UPDATE users SET profile_image = ? WHERE id = ?',
+      [imageUrl, userId]
+    );
+    
+    res.json({ 
+      message: 'Profile image updated successfully',
+      imageUrl: imageUrl
+    });
+  } catch (error) {
+    console.error('Profile image update error:', error);
+    res.status(500).json({ message: 'Failed to update profile image', error: error.message });
+  }
+});
+
+// Get profile image
+router.get('/image', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get the user's profile image URL
+    const [users] = await pool.query(
+      'SELECT profile_image FROM users WHERE id = ?',
+      [userId]
+    );
+    
+    if (users.length === 0 || !users[0].profile_image) {
+      return res.status(404).json({ message: 'No profile image found' });
+    }
+    
+    // Return the image URL
+    res.json({ 
+      imageUrl: users[0].profile_image
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

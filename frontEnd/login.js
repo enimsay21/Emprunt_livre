@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,25 +7,14 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
 import StyledAlert from './component/StyledAlert'; // Adjust the path as needed
 import ForgotPasswordModal from './ForgotPassword'; // Adjust the path as needed
 
-// Ensure web browser redirect is handled properly
-WebBrowser.maybeCompleteAuthSession();
-
 const API_URL = 'http://10.0.2.2:3000/api';
-
-// Replace with your own Google client IDs
-const GOOGLE_ANDROID_CLIENT_ID = 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com';
-const GOOGLE_IOS_CLIENT_ID = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
-const GOOGLE_EXPO_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -42,27 +31,12 @@ const LoginScreen = () => {
   // Forgot password modal state
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
 
-  // Google Auth setup
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    expoClientId: GOOGLE_EXPO_CLIENT_ID,
-  });
-
   // Show alert function
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
-
-  // Handle Google authentication response
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      handleGoogleLogin(authentication.accessToken);
-    }
-  }, [response]);
 
   const handleLogin = async () => {
     // Check if fields are empty
@@ -155,45 +129,6 @@ const LoginScreen = () => {
       throw error;
     }
   };
-
-  // Handle Google login
-  const handleGoogleLogin = async (accessToken) => {
-    try {
-      // Send the access token to your backend
-      const response = await fetch(`${API_URL}/auth/google-login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accessToken }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        showAlert('Google Login Failed', data.message || 'An error occurred during Google login');
-        return;
-      }
-      
-      // Store the token and user data
-      await AsyncStorage.setItem('userToken', data.token);
-      await AsyncStorage.setItem('userData', JSON.stringify(data.user));
-      
-      // Navigate based on user role
-      if (data.user.isAdmin) {
-        navigation.navigate('Admin');
-      } else {
-        navigation.navigate('Home');
-      }
-    } catch (error) {
-      showAlert('Google Login Error', 'Unable to connect to the server. Please check your internet connection and try again.');
-    }
-  };
-  
-  // Initiate Google login flow
-  const initiateGoogleLogin = () => {
-    promptAsync();
-  };
   
   return (
     <SafeAreaView style={styles.container}>
@@ -255,17 +190,6 @@ const LoginScreen = () => {
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
             
-            <View style={styles.orContainer}>
-              <View style={styles.line} />
-              <Text style={styles.orText}>Or Log In With</Text>
-              <View style={styles.line} />
-            </View>
-            
-            <TouchableOpacity style={styles.googleButton} onPress={initiateGoogleLogin}>
-              <Ionicons name="logo-google" size={24} color="#ffffff" style={styles.googleIcon} />
-              <Text style={styles.googleButtonText}>Sign In with Google</Text>
-            </TouchableOpacity>
-
             <View style={styles.signupContainer}>
               <Text style={styles.noAccountText}>Don't Have Any Account?</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -294,7 +218,7 @@ const LoginScreen = () => {
   );
 };
 
-// Styles remain the same
+// Styles remain the same, with Google-related styles removed
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -304,7 +228,7 @@ const styles = StyleSheet.create({
   },
   phoneFrame: {
     width: 400,
-    height: 660,
+    height: 560,
     borderRadius: 30,
     backgroundColor: 'white',
     overflow: 'hidden',
@@ -401,41 +325,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  line: {
-    flex: 1,
-    height: 3,
-    backgroundColor: '#ddd',
-  },
-  orText: {
-    marginHorizontal: 10,
-    color: '#888',
-    fontSize: 15,
-  },
-  googleButton: {
-    flexDirection: 'row',
-    backgroundColor: '#A9A9A9',
-    borderRadius: 10,
-    padding: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleIcon: {
-    marginRight: 10,
-  },
-  googleButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 10,
   },
   noAccountText: {
     fontSize: 15,

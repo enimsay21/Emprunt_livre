@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StyledAlert from './component/StyledAlert';
 import BookDetailUserScreen from './detailbookuser';
-import ProfileScreen from './profil';
+import ProfileUserScreen from './profileuser';
 import LoansScreen from './Emprunt';
 
 // Base API URL
@@ -67,24 +67,39 @@ const HomeContent = () => {
         setLoading(false);
       }
     };
-    const checkNotifications = async () => {
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`${API_URL}/notifications`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        // Calculer le nombre de notifications non lues
-        const unreadCount = response.data.filter(notification => !notification.read).length;
-        
-        // Mettre à jour les états
-        setHasNotifications(response.data.length > 0);
-        setNotificationCount(unreadCount);
-      } catch (error) {
-        console.error('Error checking notifications:', error);
-      }
-    };
-
+   // Update this function in your HomeContent component
+const checkNotifications = async () => {
+  try {
+    const token = await AsyncStorage.getItem('userToken');
+    
+    // Check if token exists before making the API call
+    if (!token) {
+      console.log('No authentication token found');
+      return; // Exit early if no token
+    }
+    
+    const response = await axios.get(`${API_URL}/notifications`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    // Calculate unread notifications
+    const unreadCount = response.data.filter(notification => !notification.read).length;
+    
+    // Update states
+    setHasNotifications(response.data.length > 0);
+    setNotificationCount(unreadCount);
+  } catch (error) {
+    console.error('Error checking notifications:', error);
+    // Don't show alert for notification errors to avoid disrupting user experience
+    
+    // If token expired, consider clearing it
+    if (error.response && error.response.status === 401) {
+      console.log('Authentication token may be expired');
+      // You might want to handle token expiration here or prompt for re-login
+      // For now, we'll just silently handle the error
+    }
+  }
+};
     getUserData();
     fetchBooks();
     checkNotifications();
@@ -303,7 +318,7 @@ const HomeScreen = () => {
     >
       <Tab.Screen name="Home" component={HomeContent} />
       <Tab.Screen name="Loans" component={LoansScreen} options={{ title: 'My Loans' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileUserScreen} />
     </Tab.Navigator>
   );
 };

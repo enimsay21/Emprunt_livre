@@ -1,12 +1,11 @@
-// BackEnd/routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../configBD/BD');
-const { generateToken, hashPassword, comparePassword } = require('../configBD/auth');
+const { generateToken, hashPassword, comparePassword } = require('../middleware/authMiddleware');
 
-const crypto = require('crypto'); // For generating reset tokens
+
 const nodemailer = require('nodemailer'); // For sending emails
-const axios = require('axios');
+
 // Configure nodemailer for sending emails
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -209,81 +208,6 @@ router.post('/reset-password', async (req, res) => {
 
     res.status(200).json({ message: 'Password has been reset successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Google OAuth login
-router.post('/google-login', async (req, res) => {
-  try {
-    const { accessToken } = req.body;
-    
-    if (!accessToken) {
-      return res.status(400).json({ message: 'Access token is required' });
-    }
-
-    // Get user info from Google
-    const googleResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    });
-
-    const { sub: googleId, email, name } = googleResponse.data;
-
-    // Check if user already exists
-    const [existingUsers] = await pool.query(
-      'SELECT * FROM users WHERE google_id = ? OR email = ?',
-      [googleId, email]
-    );
-
-    let user;
-
-    if (existingUsers.length > 0) {
-      user = existingUsers[0];
-      
-      // If user exists but doesn't have Google ID saved, update it
-      if (!user.google_id) {
-        await pool.query(
-          'UPDATE users SET google_id = ? WHERE id = ?',
-          [googleId, user.id]
-        );
-      }
-    } else {
-      // Create a new user
-      // Generate a random password for the user
-      const randomPassword = Math.random().toString(36).slice(-10);
-      const hashedPassword = await hashPassword(randomPassword);
-      
-      // Insert new user with Google details
-      const [result] = await pool.query(
-        'INSERT INTO users (username, email, password, google_id, is_admin) VALUES (?, ?, ?, ?, 0)',
-        [name, email, hashedPassword, googleId]
-      );
-      
-      user = {
-        id: result.insertId,
-        username: name,
-        email,
-        google_id: googleId,
-        is_admin: 0
-      };
-    }
-
-    // Create JWT token
-    const token = generateToken(user);
-    
-    res.status(200).json({ 
-      token, 
-      user: { 
-        id: user.id, 
-        username: user.username, 
-        email: user.email,
-        isAdmin: user.is_admin === 1
-      } 
-    });
-  } catch (error) {
-    console.error('Google login error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

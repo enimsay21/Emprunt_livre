@@ -26,6 +26,30 @@ router.get('/', authenticateToken, async (req, res) => {
       res.status(500).json({ message: 'Erreur serveur', error: error.message });
     }
   });
+  // Delete a loan record
+router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    // Check if loan exists
+    const [loans] = await pool.query(
+      'SELECT * FROM loans WHERE id = ?',
+      [req.params.id]
+    );
+    
+    if (loans.length === 0) {
+      return res.status(404).json({ message: 'Loan record not found' });
+    }
+    
+    // Delete the loan
+    await pool.query(
+      'DELETE FROM loans WHERE id = ?',
+      [req.params.id]
+    );
+    
+    res.json({ message: 'Loan record deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 // Nouvel endpoint pour vérifier les notifications (emprunts expirés ou qui expirent bientôt)
 router.get('/notifications', authenticateToken, async (req, res) => {
   try {
@@ -64,7 +88,7 @@ router.post('/', authenticateToken, async (req, res) => {
     );
     
     if (books.length === 0) {
-      return res.status(400).json({ message: 'Livre non disponible ou inexistant' });
+      return res.status(400).json({ message: 'Book not available ' });
     }
     
     // Vérifier si l'utilisateur a déjà emprunté ce livre
@@ -74,7 +98,7 @@ router.post('/', authenticateToken, async (req, res) => {
     );
     
     if (existingLoans.length > 0) {
-      return res.status(400).json({ message: 'Vous avez déjà emprunté ce livre' });
+      return res.status(400).json({ message: 'You have already borrowed this book' });
     }
     
     // Calculer la date de retour (2 semaines plus tard)

@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   titleContainer: {
-    backgroundColor: '#FF5252', // Couleur rouge similaire à l'image
+    backgroundColor: '#4C2808', 
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#EEEEEE',
   },
   buttonText: {
-    color: '#FF5252',
+    color: '#4C2808',
     fontSize: 16,
     fontWeight: 'bold',
   }

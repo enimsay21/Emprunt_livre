@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  SafeAreaView,
-  StatusBar,
-  Share
-} from 'react-native';
+import { View,Text,StyleSheet,ScrollView,Image,TouchableOpacity,ActivityIndicator,SafeAreaView, StatusBar, Share} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import StyledAlert from './component/StyledAlert';
@@ -56,13 +45,13 @@ const BookDetailUserScreen = ({ route }) => {
       const token = await AsyncStorage.getItem('userToken');
       const userData = await AsyncStorage.getItem('userData');
       const user = JSON.parse(userData);
-
+  
       const borrowResponse = await axios.post(
         `${API_URL}/loans`,
         { book_id: bookId },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-
+  
       await axios.post(
         `${API_URL}/notifications`,
         {
@@ -74,11 +63,17 @@ const BookDetailUserScreen = ({ route }) => {
         },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-
-      showAlert('Success', 'Book borrowed successfully! A notification was created.');
+  
+      showAlert('Success', 'Book borrowed successfully!');
     } catch (error) {
-      console.error('Error borrowing book:', error);
-      showAlert('Error', error.response?.data?.message || 'Could not borrow this book.');
+      
+      
+      // Extract the specific error message from the API response
+      if (error.response && error.response.data && error.response.data.message) {
+        showAlert('Error', error.response.data.message);
+      } else {
+        showAlert('Error', 'Could not borrow this book.');
+      }
     }
   };
 

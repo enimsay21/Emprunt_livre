@@ -2,9 +2,7 @@
   "expo": {
     "name": "livre-emprunt",
     "slug": "livre-emprunt",
-    "android": {
-      "googleServicesFile": "./google-services.json"
-    },
+  
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

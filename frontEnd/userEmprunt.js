@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import StyledAlert from './component/StyledAlert';
+import StyledAlerts from './component/alert';
 
 // API base URL configuration
 const API_URL = 'http://10.0.2.2:3000/api';
@@ -25,6 +25,8 @@ const LoanedBooks = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState({ title: '', message: '' });
+  const [showConfirmButton, setShowConfirmButton] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     fetchLoanedBooks();
@@ -49,7 +51,6 @@ const LoanedBooks = ({ navigation }) => {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`HTTP Error: ${response.status}, Message: ${errorText}`);
         throw new Error(errorText || `HTTP Error: ${response.status}`);
       }
       
@@ -58,17 +59,27 @@ const LoanedBooks = ({ navigation }) => {
       // Process the loan data to include status indicators and formatted dates
       const processedLoans = loansData.map(loan => {
         const dueDate = new Date(loan.due_date);
+        const borrowedDate = new Date(loan.borrowed_date);
         const today = new Date();
         const diffTime = dueDate - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
+        // Format dates as DD/MM/YYYY
+        const formatDateToDDMMYYYY = (date) => {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}/${month}/${year}`;
+        };
+        
         return {
           ...loan,
-          formattedDueDate: dueDate.toLocaleDateString(),
+          formattedDueDate: formatDateToDDMMYYYY(dueDate),
+          formattedBorrowedDate: formatDateToDDMMYYYY(borrowedDate),
           daysRemaining: diffDays,
           isOverdue: diffDays < 0,
           returningSoon: diffDays >= 0 && diffDays <= 3,
-          // Add default user information in case API doesn't provide it
+          // Add default values for user info
           username: loan.username || 'Not available',
           email: loan.email || 'Not available',
           telephone: loan.telephone || 'Not available',
@@ -80,12 +91,12 @@ const LoanedBooks = ({ navigation }) => {
       setLoading(false);
       setRefreshing(false);
     } catch (error) {
-      console.error('Error retrieving loaned books:', error);
       setAlertMessage({
         title: 'Error',
         message: error.message || 'Unable to load loaned books'
       });
       setAlertVisible(true);
+      setShowConfirmButton(false);
       setLoading(false);
       setRefreshing(false);
     }
@@ -116,29 +127,86 @@ const LoanedBooks = ({ navigation }) => {
         message: 'Book returned successfully'
       });
       setAlertVisible(true);
+      setShowConfirmButton(false);
       
       // Refresh the loans list
       fetchLoanedBooks();
     } catch (error) {
-      console.error('Error returning book:', error);
       setAlertMessage({
         title: 'Error',
         message: error.message || 'Failed to return the book'
       });
       setAlertVisible(true);
+      setShowConfirmButton(false);
+    }
+  };
+
+  // Add delete loan functionality
+  const handleDeleteLoan = async (loanId) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      // This endpoint would need to be implemented on your backend
+      const response = await fetch(`${API_URL}/loans/${loanId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP Error: ${response.status}`);
+      }
+      
+      setAlertMessage({
+        title: 'Success',
+        message: 'Loan record deleted successfully'
+      });
+      setAlertVisible(true);
+      setShowConfirmButton(false);
+      
+      // Update loans state by filtering out the deleted loan
+      setLoans(prevLoans => prevLoans.filter(loan => loan.id !== loanId));
+    } catch (error) {
+      setAlertMessage({
+        title: 'Error',
+        message: error.message || 'Failed to delete the loan record'
+      });
+      setAlertVisible(true);
+      setShowConfirmButton(false);
     }
   };
 
   const confirmReturn = (loanId, bookTitle) => {
-    Alert.alert(
-      'Return Book',
-      `Are you sure you want to mark "${bookTitle}" as returned?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Return', onPress: () => handleReturnBook(loanId) }
-      ],
-      { cancelable: true }
-    );
+    setAlertMessage({
+      title: 'Return Book',
+      message: `Are you sure you want to mark "${bookTitle}" as returned?`
+    });
+    setShowConfirmButton(true);
+    setAlertVisible(true);
+    setPendingAction(() => () => handleReturnBook(loanId));
+  };
+
+  const confirmDelete = (loanId, bookTitle) => {
+    setAlertMessage({
+      title: 'Delete Loan Record',
+      message: `Are you sure you want to delete the loan record for "${bookTitle}"?`
+    });
+    setShowConfirmButton(true);
+    setAlertVisible(true);
+    setPendingAction(() => () => handleDeleteLoan(loanId));
+  };
+
+  const handleConfirm = () => {
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
   };
 
   const onRefresh = () => {
@@ -208,24 +276,35 @@ const LoanedBooks = ({ navigation }) => {
       
       <View style={styles.loanDetails}>
         <View style={styles.detailItem}>
+          <Icon name="calendar-today" size={16} color="#4C2808" />
+          <Text style={styles.detailText}>Borrowed Date: {item.formattedBorrowedDate}</Text>
+        </View>
+        <View style={styles.detailItem}>
           <Icon name="date-range" size={16} color="#4C2808" />
           <Text style={styles.detailText}>Due Date: {item.formattedDueDate}</Text>
         </View>
-        <View style={styles.detailItem}>
-          <Icon name="info" size={16} color="#4C2808" />
-          <Text style={styles.detailText}>Loan ID: {item.id}</Text>
-        </View>
+        
       </View>
       
-      {item.status === 'active' && (
+      <View style={styles.actionButtons}>
+        {item.status === 'active' && (
+          <TouchableOpacity 
+            style={styles.returnButton}
+            onPress={() => confirmReturn(item.id, item.title)}
+          >
+            <Icon name="assignment-return" size={16} color="#fff" />
+            <Text style={styles.buttonText}>Mark as Returned</Text>
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity 
-          style={styles.returnButton}
-          onPress={() => confirmReturn(item.id, item.title)}
+          style={styles.deleteButton}
+          onPress={() => confirmDelete(item.id, item.title)}
         >
-          <Icon name="assignment-return" size={16} color="#fff" />
-          <Text style={styles.returnButtonText}>Mark as Returned</Text>
+          <Icon name="delete" size={16} color="#fff" />
+          <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
-      )}
+      </View>
     </View>
   );
 
@@ -238,7 +317,7 @@ const LoanedBooks = ({ navigation }) => {
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Loaned Books</Text>
-        <View style={{width: 24}} /> {/* Empty view to maintain layout */}
+        <View style={{width: 24}} />
       </View>
       
       {loading && !refreshing ? (
@@ -267,11 +346,13 @@ const LoanedBooks = ({ navigation }) => {
         />
       )}
       
-      <StyledAlert
+      <StyledAlerts
         visible={alertVisible}
         title={alertMessage.title}
         message={alertMessage.message}
         onClose={() => setAlertVisible(false)}
+        showConfirmButton={showConfirmButton}
+        onConfirm={handleConfirm}
       />
     </SafeAreaView>
   );
@@ -421,6 +502,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   returnButton: {
     backgroundColor: '#4C2808',
     borderRadius: 8,
@@ -429,8 +514,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
   },
-  returnButtonText: {
+  deleteButton: {
+    backgroundColor: '#D32F2F',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 8,
+  },
+  buttonText: {
     color: '#fff',
     fontWeight: '500',
     marginLeft: 8,

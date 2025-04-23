@@ -47,7 +47,7 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   const validatePhone = (phone) => {
-    const re = /^[0-9]{8,}$/;
+    const re = /^\d{10}$/;
     return re.test(phone);
   };
 
@@ -127,10 +127,9 @@ const RegisterScreen = ({ navigation }) => {
       />
       
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.headerText}>Create Account</Text>
+        <Text style={styles.headerText}>Sign Up</Text>
         <Text style={styles.subheaderText}>
-          Fill Your Information Below Or Register With Your Social Account
-        </Text>
+        Let's go to Create your Account</Text>
         
         <View style={styles.formGroup}>
           <Text style={styles.label}>Name</Text>
@@ -249,6 +248,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
+    color:'#4C2808',
   },
   subheaderText: {
     fontSize: 14,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: '#4C2808',
     marginBottom: 5,
   },
   inputContainer: {

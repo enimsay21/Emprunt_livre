@@ -9,13 +9,13 @@ import {
   ActivityIndicator,
   Image,
   SafeAreaView,
-  Alert,
   StatusBar
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StyledAlert from './component/StyledAlert';
+import StyledAlerts from './component/alert';
 
 const API_URL = 'http://10.0.2.2:3000/api';
 
@@ -25,6 +25,8 @@ const BookListScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [alert, setAlert] = useState({ visible: false, title: '', message: '' });
   const [isAdmin, setIsAdmin] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState(null);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   useEffect(() => {
     checkUserRole();
@@ -58,58 +60,57 @@ const BookListScreen = ({ navigation }) => {
       });
       setBooks(response.data);
     } catch (error) {
-      console.error('Erreur lors de la récupération des livres:', error);
+      console.error('Error retrieving books:', error);
       setAlert({
         visible: true,
-        title: 'Erreur',
-        message: 'Impossible de charger les livres. Veuillez réessayer.'
+        title: 'Error',
+        message: 'Unable to load books. Please try again.'
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteBook = async (bookId, title) => {
-    Alert.alert(
-      'Confirmation',
-      `Voulez-vous vraiment supprimer le livre "${title}" ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Supprimer', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const token = await AsyncStorage.getItem('userToken');
-              await axios.delete(`${API_URL}/books/${bookId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              
-              setBooks(books.filter(book => book.id !== bookId));
-              
-              setAlert({
-                visible: true,
-                title: 'Succès',
-                message: 'Livre supprimé avec succès'
-              });
-            } catch (error) {
-              console.error('Erreur lors de la suppression du livre:', error);
-              
-              let errorMessage = 'Impossible de supprimer le livre.';
-              if (error.response?.data?.message) {
-                errorMessage = error.response.data.message;
-              }
-              
-              setAlert({
-                visible: true,
-                title: 'Erreur',
-                message: errorMessage
-              });
-            }
-          }
-        }
-      ]
-    );
+  const showDeleteConfirmation = (book) => {
+    setBookToDelete(book);
+    setConfirmDeleteVisible(true);
+  };
+
+  handleConfirmDelete = async () => {
+    if (!bookToDelete) return;
+    
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      console.log('Attempting to delete book with ID:', bookToDelete.id);
+      
+      await axios.delete(`${API_URL}/books/${bookToDelete.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setBooks(books.filter(book => book.id !== bookToDelete.id));
+      
+      setAlert({
+        visible: true,
+        title: 'Success',
+        message: 'Book deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting book:', error);
+      
+      let errorMessage = 'Unable to delete the book.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      setAlert({
+        visible: true,
+        title: 'Error',
+        message: errorMessage
+      });
+    } finally {
+      setConfirmDeleteVisible(false);
+      setBookToDelete(null);
+    }
   };
 
   const filteredBooks = books.filter(book => 
@@ -137,7 +138,7 @@ const BookListScreen = ({ navigation }) => {
           <View style={styles.bookMetaInfo}>
             <View style={styles.genreBadge}>
               <Text style={styles.genreText} numberOfLines={1}>
-                {item.genre || 'Non classé'}
+                {item.genre || 'Unclassified'}
               </Text>
             </View>
             
@@ -152,7 +153,7 @@ const BookListScreen = ({ navigation }) => {
         {isAdmin && (
           <TouchableOpacity 
             style={styles.deleteButton}
-            onPress={() => handleDeleteBook(item.id, item.title)}
+            onPress={() => showDeleteConfirmation(item)}
           >
             <Icon name="close" size={18} color="#FFFFFF" />
           </TouchableOpacity>
@@ -170,7 +171,7 @@ const BookListScreen = ({ navigation }) => {
           <Icon name="search" size={20} color="#888" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Rechercher par titre, auteur ou genre..."
+            placeholder="Search by title, author or genre..."
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -186,7 +187,7 @@ const BookListScreen = ({ navigation }) => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#7D4F2A" />
-          <Text style={styles.loadingText}>Chargement des livres...</Text>
+          <Text style={styles.loadingText}>Loading books...</Text>
         </View>
       ) : (
         <FlatList
@@ -201,13 +202,13 @@ const BookListScreen = ({ navigation }) => {
             <View style={styles.emptyListContainer}>
               <Icon name="menu-book" size={64} color="#E0E0E0" />
               <Text style={styles.emptyListText}>
-                Aucun livre trouvé
+                No books found
               </Text>
               <TouchableOpacity 
                 style={styles.refreshButton}
                 onPress={fetchBooks}
               >
-                <Text style={styles.refreshButtonText}>Actualiser</Text>
+                <Text style={styles.refreshButtonText}>Refresh</Text>
               </TouchableOpacity>
             </View>
           }
@@ -223,12 +224,30 @@ const BookListScreen = ({ navigation }) => {
         </TouchableOpacity>
       )}
 
+      {/* Regular alert */}
       <StyledAlert
         visible={alert.visible}
         title={alert.title}
         message={alert.message}
         onClose={() => setAlert({ ...alert, visible: false })}
       />
+
+      {/* Confirmation alert for delete */}
+    {/* Confirmation alert for delete */}
+<StyledAlerts
+  visible={confirmDeleteVisible}
+  title="Confirmation"
+  message={bookToDelete ? `Are you sure you want to delete the book "${bookToDelete.title}"?` : ""}
+  onClose={() => {
+    setConfirmDeleteVisible(false);
+    setBookToDelete(null);
+  }}
+  showConfirmButton={true}
+  onConfirm={handleConfirmDelete}
+/>
+
+   
+      
     </SafeAreaView>
   );
 };
@@ -393,6 +412,40 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.27,
     shadowRadius: 4.65,
   },
+  confirmationButtons: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'white',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#EEEEEE',
+    elevation: 8,
+  },
+  cancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#F5F5F5',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  confirmButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#4C2808',
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: '500',
+  }
 });
 
 export default BookListScreen;
