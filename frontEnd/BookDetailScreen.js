@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  SafeAreaView,
-  StatusBar,
-  Share
-} from 'react-native';
+import { StyleSheet,View,Text,Image,ScrollView,TouchableOpacity,ActivityIndicator,SafeAreaView,StatusBar,Share} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -69,7 +58,7 @@ const BookDetailScreen = ({ route, navigation }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      fetchBookDetails(); // Refresh book details
+      fetchBookDetails(); 
       
       setAlert({
         visible: true,

@@ -150,7 +150,7 @@ const fetchUsers = async () => {
         message: 'User deleted successfully'
       });
     } catch (error) {
-      console.error('Error deleting user:', error.response?.data || error.message);
+      
       setAlert({
         visible: true,
         title: 'Error',

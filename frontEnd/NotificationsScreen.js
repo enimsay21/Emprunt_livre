@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  FlatList, 
-  ActivityIndicator 
-} from 'react-native';
+import { View, Text, StyleSheet,   TouchableOpacity,  FlatList,  ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import StyledAlert from './component/StyledAlert';
 
-// Base API URL
+
 const API_URL = 'http://10.0.2.2:3000/api';
 
 const NotificationsScreen = ({ navigation }) => {
@@ -147,7 +140,6 @@ const NotificationsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton} 
@@ -178,8 +170,6 @@ const NotificationsScreen = ({ navigation }) => {
           }
         />
       )}
-
-      {/* Custom Alert */}
       <StyledAlert
         visible={alertVisible}
         title={alertTitle}

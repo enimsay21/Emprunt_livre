@@ -68,7 +68,7 @@ const BookDetailUserScreen = ({ route }) => {
     } catch (error) {
       
       
-      // Extract the specific error message from the API response
+  
       if (error.response && error.response.data && error.response.data.message) {
         showAlert('Error', error.response.data.message);
       } else {
@@ -79,7 +79,7 @@ const BookDetailUserScreen = ({ route }) => {
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
-    // Typically send request to update favorites
+   
   };
 
   const handleShareBook = async () => {
@@ -122,7 +122,7 @@ const BookDetailUserScreen = ({ route }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#4C2808" barStyle="light-content" />
 
-      {/* Header */}
+    
       <View style={styles.header}>
         <TouchableOpacity style={styles.backIconButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#FFF" />
@@ -169,9 +169,7 @@ const BookDetailUserScreen = ({ route }) => {
               color={book.available_copies > 0 ? "#28A745" : "#DC3545"}
             />
             <Text style={styles.availabilityText}>
-              {book.available_copies > 0
-                ? `${book.available_copies} copies available`
-                : 'Currently unavailable'}
+              {book.available_copies > 0 ? `${book.available_copies} copies available`  : 'Currently unavailable'}
             </Text>
           </View>
 

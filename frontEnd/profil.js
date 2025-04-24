@@ -5,7 +5,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import StyledAlert from './component/StyledAlert';
 
-// Base API URL - make sure this matches your backend server address
 const API_URL = 'http://10.0.2.2:3000/api';
 
 const ProfileScreen = ({ navigation }) => {
@@ -25,14 +24,12 @@ const ProfileScreen = ({ navigation }) => {
     confirmPassword: ''
   });
 
-  // Show custom alert
+
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
-
-  // Main function to fetch user profile data
   const fetchUserProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -61,7 +58,6 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
   
-  // Error handling function
   const handleError = (error) => {
     let errorMessage = 'Unable to load profile information.';
     
@@ -85,7 +81,6 @@ const ProfileScreen = ({ navigation }) => {
     setError(errorMessage);
   };
   
-  // Validate form inputs
   const validateForm = () => {
     const { email, telephone, newPassword, currentPassword, confirmPassword } = editedData;
     
@@ -95,7 +90,7 @@ const ProfileScreen = ({ navigation }) => {
       return false;
     }
     
-    // Telephone validation (optional)
+    // Telephone validation 
     if (telephone && !/^\d{10}$/.test(telephone)) {
       showAlert('Error', 'Please enter a valid 10-digit phone number');
       return false;
@@ -122,9 +117,9 @@ const ProfileScreen = ({ navigation }) => {
     return true;
   };
   
-  // Handle profile update
+  
   const handleUpdateProfile = async () => {
-    // Validate form first
+    
     if (!validateForm()) {
       return;
     }
@@ -132,14 +127,12 @@ const ProfileScreen = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       
-      // Prepare update payload
+    
       const updatePayload = {
         username: editedData.username || userData.username,
         email: editedData.email || userData.email,
         telephone: editedData.telephone || userData.telephone
       };
-      
-      // Profile update request
       const profileResponse = await axios.put(`${API_URL}/profile`, updatePayload, {
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -147,7 +140,6 @@ const ProfileScreen = ({ navigation }) => {
         }
       });
       
-      // Password change request (if new password provided)
       if (editedData.newPassword) {
         await axios.put(`${API_URL}/profile/change-password`, {
           currentPassword: editedData.currentPassword,
@@ -160,11 +152,11 @@ const ProfileScreen = ({ navigation }) => {
         });
       }
       
-      // Update local state and storage
+     
       setUserData(profileResponse.data);
       await AsyncStorage.setItem('userData', JSON.stringify(profileResponse.data));
       
-      // Reset editing state
+    
       setIsEditing(false);
       setEditedData({
         username: '',
@@ -187,7 +179,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
   
-  // Handle user logout
+  
   const handleLogout = async () => {
     try {
       await AsyncStorage.multiRemove(['userToken', 'userData']);
@@ -202,7 +194,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
   
-  // Fetch profile when screen comes into focus
+  // Fetch profile 
   useEffect(() => {
     fetchUserProfile();
     
@@ -213,7 +205,7 @@ const ProfileScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
   
-  // Rendering logic remains the same as in the original code
+
   
   // Render loading state
   if (loading) {
@@ -250,8 +242,6 @@ const ProfileScreen = ({ navigation }) => {
       {isEditing ? (
         <View style={styles.editForm}>
           <Text style={styles.sectionTitle}>Edit Profile</Text>
-          
-          {/* Username Input with Icon */}
           <View style={styles.inputContainer}>
             <Icon name="person" size={24} color="#4C2808" style={styles.inputIcon} />
             <TextInput
@@ -261,8 +251,6 @@ const ProfileScreen = ({ navigation }) => {
               onChangeText={(text) => setEditedData({...editedData, username: text})}
             />
           </View>
-          
-          {/* Email Input with Icon */}
           <View style={styles.inputContainer}>
             <Icon name="email" size={24} color="#4C2808" style={styles.inputIcon} />
             <TextInput
@@ -273,8 +261,6 @@ const ProfileScreen = ({ navigation }) => {
               keyboardType="email-address"
             />
           </View>
-          
-          {/* Telephone Input with Icon */}
           <View style={styles.inputContainer}>
             <Icon name="phone" size={24} color="#4C2808" style={styles.inputIcon} />
             <TextInput
@@ -287,8 +273,6 @@ const ProfileScreen = ({ navigation }) => {
           </View>
           
           <Text style={styles.sectionTitle}>Change Password </Text>
-          
-          {/* Current Password Input with Icon */}
           <View style={styles.inputContainer}>
             <Icon name="lock" size={24} color="#4C2808" style={styles.inputIcon} />
             <TextInput
@@ -299,8 +283,6 @@ const ProfileScreen = ({ navigation }) => {
               onChangeText={(text) => setEditedData({...editedData, currentPassword: text})}
             />
           </View>
-          
-          {/* New Password Input with Icon */}
           <View style={styles.inputContainer}>
             <Icon name="lock-open" size={24} color="#4C2808" style={styles.inputIcon} />
             <TextInput
@@ -311,8 +293,6 @@ const ProfileScreen = ({ navigation }) => {
               onChangeText={(text) => setEditedData({...editedData, newPassword: text})}
             />
           </View>
-          
-          {/* Confirm New Password Input with Icon */}
           <View style={styles.inputContainer}>
             <Icon name="verified-user" size={24} color="#4C2808" style={styles.inputIcon} />
             <TextInput
@@ -323,8 +303,6 @@ const ProfileScreen = ({ navigation }) => {
               onChangeText={(text) => setEditedData({...editedData, confirmPassword: text})}
             />
           </View>
-          
-          {/* Rest of the code remains the same */}
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={styles.saveButton} 

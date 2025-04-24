@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Image,
-  SafeAreaView,
-  StatusBar
-} from 'react-native';
+import {StyleSheet,View,Text,FlatList,TouchableOpacity,TextInput,ActivityIndicator,Image,SafeAreaView, StatusBar} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -232,8 +221,7 @@ const BookListScreen = ({ navigation }) => {
         onClose={() => setAlert({ ...alert, visible: false })}
       />
 
-      {/* Confirmation alert for delete */}
-    {/* Confirmation alert for delete */}
+   
 <StyledAlerts
   visible={confirmDeleteVisible}
   title="Confirmation"

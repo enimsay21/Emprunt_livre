@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  TouchableOpacity,
-  StatusBar,
-  SafeAreaView,
-  Image
-} from 'react-native';
+import {View,Text,StyleSheet,ScrollView,ActivityIndicator,TouchableOpacity, StatusBar, SafeAreaView, Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import StyledAlert from './component/StyledAlert';
 
-// Base API URL
+
 const API_URL = 'http://10.0.2.2:3000/api';
 
 const LoansScreen = ({ navigation }) => {
@@ -57,7 +47,7 @@ const LoansScreen = ({ navigation }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       showAlert('Success', 'Book returned successfully!');
-      // Refresh loans list
+     
       fetchLoans();
     } catch (error) {
       console.error('Error returning book:', error);
@@ -69,7 +59,7 @@ const LoansScreen = ({ navigation }) => {
     return new Date() > new Date(dueDate);
   };
 
-  // Function to format date as DD/MM/YYYY
+ 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;

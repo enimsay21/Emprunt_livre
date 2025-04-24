@@ -5,8 +5,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import StyledAlert from './component/StyledAlert';
-
-// Base API URL - make sure this matches your backend server address
 const API_URL = 'http://10.0.2.2:3000/api';
 
 const Header = ({ title, navigation, showBackButton = false }) => {
@@ -48,14 +46,14 @@ const ProfileScreen = ({ navigation }) => {
     confirmPassword: ''
   });
 
-  // Show custom alert
+
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
     setAlertVisible(true);
   };
 
-  // Main function to fetch user profile data
+  //  fetch user profile data
   const fetchUserProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -76,7 +74,7 @@ const ProfileScreen = ({ navigation }) => {
       
       setUserData(response.data);
       
-      // Get profile image from the server or storage
+      // Get profile image
       try {
         const profileImageResponse = await axios.get(`${API_URL}/profile/image`, {
           headers: { 
@@ -136,7 +134,7 @@ const ProfileScreen = ({ navigation }) => {
     setError(errorMessage);
   };
 
-  // Function to render the custom photo selection modal
+
   const renderPhotoSelectionModal = () => {
     return (
       <Modal
@@ -187,7 +185,7 @@ const ProfileScreen = ({ navigation }) => {
     );
   };
 
-  // Handle picking an image from the gallery
+
   const pickImage = async () => {
     try {
       // Request permission first
@@ -242,8 +240,7 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
   
-  // Upload image to server
-// Upload image to server
+  // Upload image 
 const handleImageUpload = async (imageUri) => {
     try {
       setImageLoading(true);
@@ -254,26 +251,23 @@ const handleImageUpload = async (imageUri) => {
         setTimeout(handleLogout, 2000);
         return;
       }
-      
-      // Instead of FormData, send the imageUrl directly as JSON
+    
       await axios.post(`${API_URL}/profile/image`, {
-        imageUrl: imageUri  // Send the URI directly as imageUrl
+        imageUrl: imageUri  
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         }
       });
-      
-      // Set the image locally and save to AsyncStorage
+    
       setProfileImage(imageUri);
       await AsyncStorage.setItem('profileImage', imageUri);
       
       showAlert('Success', 'Profile photo updated successfully');
     } catch (error) {
       console.error('Upload error:', error);
-      
-      // Still set the image locally as a fallback
+
       setProfileImage(imageUri);
       await AsyncStorage.setItem('profileImage', imageUri);
       
@@ -293,7 +287,7 @@ const handleImageUpload = async (imageUri) => {
       return false;
     }
     
-    // Telephone validation (optional)
+    // Telephone validation 
     if (telephone && !/^\d{10}$/.test(telephone)) {
       showAlert('Error', 'Please enter a valid 10-digit phone number');
       return false;
@@ -336,8 +330,7 @@ const handleImageUpload = async (imageUri) => {
         email: editedData.email || userData.email,
         telephone: editedData.telephone || userData.telephone
       };
-      
-      // Profile update request
+    
       const profileResponse = await axios.put(`${API_URL}/profile`, updatePayload, {
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -345,7 +338,7 @@ const handleImageUpload = async (imageUri) => {
         }
       });
       
-      // Password change request (if new password provided)
+      // Password change request 
       if (editedData.newPassword) {
         await axios.put(`${API_URL}/profile/change-password`, {
           currentPassword: editedData.currentPassword,
@@ -358,11 +351,11 @@ const handleImageUpload = async (imageUri) => {
         });
       }
       
-      // Update local state and storage
+  
       setUserData(profileResponse.data);
       await AsyncStorage.setItem('userData', JSON.stringify(profileResponse.data));
       
-      // Reset editing state
+     
       setIsEditing(false);
       setEditedData({
         username: '',
@@ -400,7 +393,7 @@ const handleImageUpload = async (imageUri) => {
     }
   };
   
-  // Fetch profile when screen comes into focus
+  // Fetch profile when 
   useEffect(() => {
     fetchUserProfile();
     
@@ -469,12 +462,10 @@ const handleImageUpload = async (imageUri) => {
           )}
         </View>
         
-        {/* Edit Profile Form or Profile Info */}
+        {/* Edit Profile */}
         {isEditing ? (
           <View style={styles.editForm}>
             <Text style={styles.sectionTitle}>Edit Profile</Text>
-            
-            {/* Username Input with Icon */}
             <View style={styles.inputContainer}>
               <Icon name="person" size={24} color="#4C2808" style={styles.inputIcon} />
               <TextInput
@@ -484,8 +475,6 @@ const handleImageUpload = async (imageUri) => {
                 onChangeText={(text) => setEditedData({...editedData, username: text})}
               />
             </View>
-            
-            {/* Email Input with Icon */}
             <View style={styles.inputContainer}>
               <Icon name="email" size={24} color="#4C2808" style={styles.inputIcon} />
               <TextInput
@@ -496,8 +485,6 @@ const handleImageUpload = async (imageUri) => {
                 keyboardType="email-address"
               />
             </View>
-            
-            {/* Telephone Input with Icon */}
             <View style={styles.inputContainer}>
               <Icon name="phone" size={24} color="#4C2808" style={styles.inputIcon} />
               <TextInput
@@ -510,8 +497,6 @@ const handleImageUpload = async (imageUri) => {
             </View>
             
             <Text style={styles.sectionTitle}>Change Password </Text>
-            
-            {/* Current Password Input with Icon */}
             <View style={styles.inputContainer}>
               <Icon name="lock" size={24} color="#4C2808" style={styles.inputIcon} />
               <TextInput
@@ -522,8 +507,6 @@ const handleImageUpload = async (imageUri) => {
                 onChangeText={(text) => setEditedData({...editedData, currentPassword: text})}
               />
             </View>
-            
-            {/* New Password Input with Icon */}
             <View style={styles.inputContainer}>
               <Icon name="lock-open" size={24} color="#4C2808" style={styles.inputIcon} />
               <TextInput
@@ -534,8 +517,6 @@ const handleImageUpload = async (imageUri) => {
                 onChangeText={(text) => setEditedData({...editedData, newPassword: text})}
               />
             </View>
-            
-            {/* Confirm New Password Input with Icon */}
             <View style={styles.inputContainer}>
               <Icon name="verified-user" size={24} color="#4C2808" style={styles.inputIcon} />
               <TextInput
@@ -871,7 +852,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '500',
   },
-  // Styles for the custom photo selection modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

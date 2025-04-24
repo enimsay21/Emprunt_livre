@@ -1,21 +1,10 @@
-// frontEnd/Admin/screens/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  Dimensions,
-  StatusBar,
-} from 'react-native';
+import { View, Text,  StyleSheet, TouchableOpacity,ScrollView,SafeAreaView, Dimensions,StatusBar,} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StyledAlert from './component/StyledAlert';
 import { LineChart } from 'react-native-chart-kit';
 
-// API base URL configuration
 const API_URL = 'http://10.0.2.2:3000/api';
 
 const AdminDashboard = ({ navigation }) => {
@@ -32,7 +21,7 @@ const AdminDashboard = ({ navigation }) => {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
-        data: [0, 0, 0, 0, 0, 0, 0], // Initialize with zeros
+        data: [0, 0, 0, 0, 0, 0, 0], 
         color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
         strokeWidth: 2
       }
@@ -43,39 +32,7 @@ const AdminDashboard = ({ navigation }) => {
     fetchDashboardData();
   }, []);
 
-  // Function to make secure API requests
-  const fetchWithAuth = async (endpoint) => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      
-      if (!token) {
-        throw new Error('Authentication token missing');
-      }
-      
-      const fullUrl = `${API_URL}${endpoint}`;
-      console.log(`Sending request to: ${fullUrl}`);
-      
-      const response = await fetch(fullUrl, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        console.error(`HTTP Error: ${response.status}`);
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP Error: ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      console.log(`Response received from ${endpoint}:`, JSON.stringify(responseData, null, 2));
-      return responseData;
-    } catch (error) {
-      console.error(`Error during request ${endpoint}:`, error);
-      throw error;
-    }
-  };
+
 
   const fetchDashboardData = async () => {
     try {
@@ -241,7 +198,7 @@ const AdminDashboard = ({ navigation }) => {
               <View style={styles.actionButtons}>
                 <TouchableOpacity 
                   style={styles.actionButton}
-                  onPress={() => navigation.navigate('AddBook')}
+                  onPress={() => navigation.navigate('Addbook')}
                 >
                   <View style={[styles.actionIconContainer, styles.addBookButton]}>
                     <Icon name="add-circle" size={24} color="#fff" />
@@ -251,7 +208,7 @@ const AdminDashboard = ({ navigation }) => {
                 
                 <TouchableOpacity 
                   style={styles.actionButton}
-                  onPress={() => navigation.navigate('UsersList')}
+                  onPress={() => navigation.navigate('Users')}
                 >
                   <View style={[styles.actionIconContainer, styles.viewUsersButton]}>
                     <Icon name="people" size={24} color="#fff" />

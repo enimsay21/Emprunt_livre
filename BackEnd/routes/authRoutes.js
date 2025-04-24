@@ -4,7 +4,7 @@ const pool = require('../configBD/BD');
 const { generateToken, hashPassword, comparePassword } = require('../middleware/authMiddleware');
 
 
-const nodemailer = require('nodemailer'); // For sending emails
+const nodemailer = require('nodemailer'); 
 
 // Configure nodemailer for sending emails
 const transporter = nodemailer.createTransport({
@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
   
 });
 
-// Add this to test the connection when server starts
+// vefier le serverur lance
 transporter.verify(function(error, success) {
   if (error) {
     console.log('Email server error:', error);
@@ -29,12 +29,11 @@ transporter.verify(function(error, success) {
 });
 
 // Inscription
-// Ensure register route sets is_admin to 0 by default
 router.post('/register', async (req, res) => {
     try {
       const { username, email, telephone, cin, password } = req.body;
       
-      // Check if user already exists
+      // verifie l user exist
       const [existingUsers] = await pool.query(
         'SELECT * FROM users WHERE username = ? OR email = ?',
         [username, email]
@@ -47,7 +46,6 @@ router.post('/register', async (req, res) => {
       // Hash password
       const hashedPassword = await hashPassword(password);
       
-      // Insert new user with is_admin explicitly set to 0
       const [result] = await pool.query(
         'INSERT INTO users (username, email, telephone, cin, password, is_admin) VALUES (?, ?, ?, ?, ?, 0)',
         [username, email, telephone, cin, hashedPassword]
@@ -111,7 +109,7 @@ router.post('/login', async (req, res) => {
 });
 
 
-// Forgot Password - Step 1: Request password reset with verification code
+// Forgot Password : Request password reset with verification code
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;

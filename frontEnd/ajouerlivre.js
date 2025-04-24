@@ -1,18 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-  Modal
-} from 'react-native';
+import { StyleSheet,View,Text,TextInput,TouchableOpacity,ScrollView,Image, ActivityIndicator,KeyboardAvoidingView,Platform,StatusBar,Modal} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -39,15 +26,14 @@ const AddBookScreen = ({ navigation }) => {
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
 
   const handleChange = (field, value) => {
-    // Update the book state
+   
     setBook({ ...book, [field]: value });
     
-    // If total_copies is changed, automatically update available_copies
+
     if (field === 'total_copies' && !isNaN(value) && parseInt(value) > 0) {
       setBook(prev => ({ ...prev, 'available_copies': value }));
     }
     
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors({ ...errors, [field]: '' });
     }
@@ -56,16 +42,16 @@ const AddBookScreen = ({ navigation }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Required fields validation
+
     if (!book.title.trim()) newErrors.title = 'Title is required';
     if (!book.author.trim()) newErrors.author = 'Author is required';
     
-    // ISBN validation (optional but needs to be unique if provided)
+    // ISBN validation
     if (book.isbn && !/^[0-9-]{10,17}$/.test(book.isbn.trim())) {
       newErrors.isbn = 'Invalid ISBN format';
     }
     
-    // Copies validation
+   
     if (!book.total_copies || isNaN(book.total_copies) || parseInt(book.total_copies) <= 0) {
       newErrors.total_copies = 'Number of copies must be a positive number';
     }
@@ -153,7 +139,7 @@ const AddBookScreen = ({ navigation }) => {
         ...book,
         total_copies: parseInt(book.total_copies),
         available_copies: parseInt(book.available_copies),
-        cover_url: image, // Use only the image from ImagePicker
+        cover_url: image, 
       };
       
       const response = await axios.post(`${API_URL}/books`, bookData, {
@@ -166,7 +152,7 @@ const AddBookScreen = ({ navigation }) => {
         message: 'Book added successfully'
       });
       
-      // Reset the form
+
       setBook({
         title: '',
         author: '',

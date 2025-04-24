@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../configBD/BD');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
-// Obtenir tous les emprunts (admin peut voir tous, utilisateur ne voit que les siens)
+// Obtenir tous les emprunts par admin
 router.get('/', authenticateToken, async (req, res) => {
     try {
       let query = `
@@ -26,10 +26,10 @@ router.get('/', authenticateToken, async (req, res) => {
       res.status(500).json({ message: 'Erreur serveur', error: error.message });
     }
   });
-  // Delete a loan record
+  // suppromer un emprunt
 router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Check if loan exists
+    // verifier existe
     const [loans] = await pool.query(
       'SELECT * FROM loans WHERE id = ?',
       [req.params.id]
@@ -39,7 +39,7 @@ router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
       return res.status(404).json({ message: 'Loan record not found' });
     }
     
-    // Delete the loan
+    //supprimer
     await pool.query(
       'DELETE FROM loans WHERE id = ?',
       [req.params.id]
@@ -50,7 +50,7 @@ router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-// Nouvel endpoint pour vérifier les notifications (emprunts expirés ou qui expirent bientôt)
+// vérifier les notifications 
 router.get('/notifications', authenticateToken, async (req, res) => {
   try {
     const user_id = req.user.id;
@@ -101,7 +101,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'You have already borrowed this book' });
     }
     
-    // Calculer la date de retour (2 semaines plus tard)
+    // Calculer la date de retour 2 semaines 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
     
@@ -149,7 +149,7 @@ router.put('/:id/return', authenticateToken, async (req, res) => {
       [req.params.id]
     );
     
-    // Mettre à jour le nombre de copies disponibles
+    // modifier le nombre de copies disponibles
     await pool.query(
       'UPDATE books SET available_copies = available_copies + 1 WHERE id = ?',
       [loan.book_id]

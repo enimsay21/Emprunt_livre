@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  SafeAreaView,
-} from 'react-native';
+import {  StyleSheet, View, Text, TextInput, TouchableOpacity, Image, SafeAreaView,} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import StyledAlert from './component/StyledAlert'; // Adjust the path as needed
-import ForgotPasswordModal from './ForgotPassword'; // Adjust the path as needed
+import StyledAlert from './component/StyledAlert'; 
+import ForgotPasswordModal from './ForgotPassword'; 
 
 const API_URL = 'http://10.0.2.2:3000/api';
 
@@ -22,16 +14,12 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Alert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   
-  // Forgot password modal state
-  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
 
-  // Show alert function
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const showAlert = (title, message) => {
     setAlertTitle(title);
     setAlertMessage(message);
@@ -39,7 +27,7 @@ const LoginScreen = () => {
   };
 
   const handleLogin = async () => {
-    // Check if fields are empty
+ 
     if (!email.trim()) {
       showAlert('Error', 'Please enter your email address');
       return;
@@ -72,7 +60,7 @@ const LoginScreen = () => {
       const data = await response.json();
       
       if (!response.ok) {
-        // Handle specific error cases
+      
         if (response.status === 401) {
           showAlert('Authentication Failed', 'Incorrect email or password');
         } else if (response.status === 404) {
@@ -82,12 +70,11 @@ const LoginScreen = () => {
         }
         return;
       }
-      
-      // Store the token in AsyncStorage
+    
       await AsyncStorage.setItem('userToken', data.token);
       await AsyncStorage.setItem('userData', JSON.stringify(data.user));
       
-      // Navigate based on user role
+ 
       if (data.user.isAdmin) {
         navigation.navigate('Admin');
       } else {
@@ -99,7 +86,7 @@ const LoginScreen = () => {
     }
   };
 
-  // Update your handleForgotPassword function in LoginScreen.js
+
   const handleForgotPassword = async (email) => {
     try {
       const response = await fetch(`${API_URL}/auth/forgot-password`, {
@@ -110,22 +97,20 @@ const LoginScreen = () => {
         body: JSON.stringify({ email }),
       });
       
-      // Check if response is OK before trying to parse JSON
+    
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to send reset link');
       }
       
-      // Parse JSON response
       const data = await response.json();
       return data;
     } catch (error) {
-      // Check if the error is specifically a JSON parsing error
+ 
       if (error instanceof SyntaxError && error.message.includes('JSON')) {
         console.error('JSON parsing error:', error);
         throw new Error('Server returned an invalid response. Please try again later.');
       }
-      console.error('Forgot password error:', error);
       throw error;
     }
   };
@@ -200,7 +185,7 @@ const LoginScreen = () => {
         </View>
       </View>
       
-      {/* Custom Alert Component */}
+
       <StyledAlert
         visible={alertVisible}
         title={alertTitle}
@@ -208,7 +193,7 @@ const LoginScreen = () => {
         onClose={() => setAlertVisible(false)}
       />
       
-      {/* Forgot Password Modal */}
+
       <ForgotPasswordModal
         visible={forgotPasswordVisible}
         onClose={() => setForgotPasswordVisible(false)}
@@ -218,7 +203,7 @@ const LoginScreen = () => {
   );
 };
 
-// Styles remain the same, with Google-related styles removed
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

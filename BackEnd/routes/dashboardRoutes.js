@@ -25,7 +25,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const totalUsersResult = await pool.query(totalUsersQuery);
     const totalUsers = totalUsersResult[0][0].totalUsers;
     
-    // Emprunts récents (dernière semaine)
+    // Emprunts récents de semaine
     const recentLoansQuery = `
       SELECT COUNT(*) AS recentLoans 
       FROM loans 
@@ -60,7 +60,7 @@ router.get('/', authenticateToken, async (req, res) => {
     // Préparer les données pour le graphique
     const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     
-    // Initialiser toutes les valeurs à 0
+    // Initialiser toutes  0
     const activityCounts = {
       'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0
     };
@@ -83,9 +83,6 @@ router.get('/', authenticateToken, async (req, res) => {
         }
       ]
     };
-
-    // Log pour déboguer
-    console.log('Activity data being sent:', JSON.stringify(activityData, null, 2));
 
     res.json({
       totalBooks,

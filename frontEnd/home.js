@@ -1,31 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView, 
-  Image, 
-  TextInput,
-  ActivityIndicator,
-  FlatList
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput,ActivityIndicator,FlatList} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StyledAlert from './component/StyledAlert';
-import BookDetailUserScreen from './detailbookuser';
 import ProfileUserScreen from './profileuser';
 import LoansScreen from './Emprunt';
 
-// Base API URL
+
 const API_URL = 'http://10.0.2.2:3000/api';
 
 const Tab = createBottomTabNavigator();
 
-// Main Home content component
+
 const HomeContent = () => {
   const navigation = useNavigation();
   const [userName, setUserName] = useState('');
@@ -67,36 +56,32 @@ const HomeContent = () => {
         setLoading(false);
       }
     };
-   // Update this function in your HomeContent component
+ 
 const checkNotifications = async () => {
   try {
     const token = await AsyncStorage.getItem('userToken');
     
-    // Check if token exists before making the API call
+  
     if (!token) {
       console.log('No authentication token found');
-      return; // Exit early if no token
+      return;
     }
     
     const response = await axios.get(`${API_URL}/notifications`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     
-    // Calculate unread notifications
+  
     const unreadCount = response.data.filter(notification => !notification.read).length;
     
-    // Update states
+
     setHasNotifications(response.data.length > 0);
     setNotificationCount(unreadCount);
   } catch (error) {
-    console.error('Error checking notifications:', error);
-    // Don't show alert for notification errors to avoid disrupting user experience
-    
-    // If token expired, consider clearing it
+  
     if (error.response && error.response.status === 401) {
       console.log('Authentication token may be expired');
-      // You might want to handle token expiration here or prompt for re-login
-      // For now, we'll just silently handle the error
+      
     }
   }
 };
@@ -104,18 +89,18 @@ const checkNotifications = async () => {
     fetchBooks();
     checkNotifications();
     
-    // Set up notification check interval
-    const notificationInterval = setInterval(checkNotifications, 60000); // Check every minute
+    
+    const notificationInterval = setInterval(checkNotifications, 60000); 
     
     return () => clearInterval(notificationInterval);
   }, []);
 
   const handleLogout = async () => {
     try {
-      // Clear token and user data
+     
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('userData');
-      // Navigate back to login
+ 
       navigation.replace('Login');
     } catch (error) {
       console.error('Error during logout:', error);
@@ -184,10 +169,10 @@ const checkNotifications = async () => {
 
   return (
     <View style={styles.container}>
-      {/* Header with greeting, username, profile image and logout */}
+
       <View style={styles.header}>
         <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeText}>Hi! {userName}</Text>
+          <Text style={styles.welcomeText}>Hi! </Text>
           <Text style={styles.welcomeSubText}>Welcome to BookEase</Text>
         </View>
         <View style={styles.headerActions}>
@@ -207,8 +192,6 @@ const checkNotifications = async () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
         <TextInput
@@ -219,8 +202,6 @@ const checkNotifications = async () => {
           placeholderTextColor="#999"
         />
       </View>
-
-      {/* Categories row */}
       <View style={styles.categoriesContainer}>
         <ScrollView 
           horizontal 
@@ -249,7 +230,7 @@ const checkNotifications = async () => {
         </ScrollView>
       </View>
 
-      {/* Books Grid */}
+ 
       <FlatList
         data={filteredBooks}
         renderItem={renderBookItem}
@@ -266,7 +247,7 @@ const checkNotifications = async () => {
         }
       />
 
-      {/* Custom Alert */}
+ 
       <StyledAlert
         visible={alertVisible}
         title={alertTitle}
@@ -277,7 +258,7 @@ const checkNotifications = async () => {
   );
 };
 
-// Main Tab Navigator
+
 const HomeScreen = () => {
   return (
     <Tab.Navigator

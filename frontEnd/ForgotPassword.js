@@ -20,10 +20,10 @@ const ForgotPasswordModal = ({ visible, onClose }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState(''); 
 
   const handleSubmit = async () => {
-    // Validate email
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim() || !emailRegex.test(email)) {
       setMessage('Please enter a valid email address');
@@ -35,7 +35,7 @@ const ForgotPasswordModal = ({ visible, onClose }) => {
     setMessage('');
     
     try {
-      // Send request to backend
+   
       const response = await fetch(`${API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: {
@@ -53,7 +53,7 @@ const ForgotPasswordModal = ({ visible, onClose }) => {
       setMessage('Verification code sent to your email');
       setMessageType('success');
       
-      // Navigate to verification screen after a brief delay
+    
       setTimeout(() => {
         onClose();
         navigation.navigate('VerificationCode', { email });

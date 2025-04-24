@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-  Modal
-} from 'react-native';
+import {StyleSheet,View,Text,TextInput,TouchableOpacity,ScrollView,Image,ActivityIndicator,Modal} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -41,7 +31,7 @@ const EditBookScreen = ({ route, navigation }) => {
   const [alert, setAlert] = useState({ visible: false, title: '', message: '' });
   const [imageModalVisible, setImageModalVisible] = useState(false);
 
-  // Fetch book data when component mounts
+
   useEffect(() => {
     const fetchBookData = async () => {
       try {
@@ -82,7 +72,6 @@ const EditBookScreen = ({ route, navigation }) => {
 
   const handleChange = (field, value) => {
     setBook({ ...book, [field]: value });
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors({ ...errors, [field]: '' });
     }
@@ -93,12 +82,12 @@ const EditBookScreen = ({ route, navigation }) => {
     if (!book.title.trim()) newErrors.title = 'Title is required';
     if (!book.author.trim()) newErrors.author = 'Author is required';
     
-    // Validation that total_copies is a positive number
+  
     if (!book.total_copies || isNaN(book.total_copies) || parseInt(book.total_copies) <= 0) {
       newErrors.total_copies = 'Total copies must be a positive number';
     }
     
-    // Validation that available_copies is not greater than total_copies
+    // La validation available_copies n'est pas supérieure à total_copies
     if (
       parseInt(book.available_copies) > parseInt(book.total_copies) || 
       isNaN(book.available_copies) || 
@@ -132,8 +121,7 @@ const EditBookScreen = ({ route, navigation }) => {
     
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      // In a real app, you would upload the image to your server here
-      // and update cover_url with the uploaded image URL
+    
     }
     setImageModalVisible(false);
   };
@@ -158,8 +146,6 @@ const EditBookScreen = ({ route, navigation }) => {
     
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      // In a real app, you would upload the image to your server here
-      // and update cover_url with the uploaded image URL
     }
     setImageModalVisible(false);
   };
@@ -169,17 +155,13 @@ const EditBookScreen = ({ route, navigation }) => {
     
     try {
       setLoading(true);
-      
-      // In a real app, you would upload the image here
-      // For this example, we assume that cover_url can be an external URL
-      // or that we use the URL in book.cover_url
-      
+           
       const token = await AsyncStorage.getItem('userToken');
       const bookData = {
         ...book,
         total_copies: parseInt(book.total_copies),
         available_copies: parseInt(book.available_copies),
-        cover_url: image || book.cover_url, // In real life, this would be the URL of the uploaded image
+        cover_url: image || book.cover_url, 
       };
       
       await axios.put(`${API_URL}/books/${book.id}`, bookData, {
@@ -216,7 +198,7 @@ const EditBookScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Top app bar */}
+
       <View style={styles.appBar}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#fff" />
@@ -227,7 +209,7 @@ const EditBookScreen = ({ route, navigation }) => {
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.formContainer}>
-          {/* New Book Cover Section */}
+       
           <View style={styles.coverSection}>
             {image ? (
               <Image source={{ uri: image }} style={styles.coverPreview} />
@@ -238,7 +220,6 @@ const EditBookScreen = ({ route, navigation }) => {
               </View>
             )}
             
-            {/* Single camera button */}
             <TouchableOpacity 
               style={styles.cameraButton} 
               onPress={() => setImageModalVisible(true)}
@@ -350,7 +331,7 @@ const EditBookScreen = ({ route, navigation }) => {
         </View>
       </ScrollView>
       
-      {/* Image source selection modal */}
+    
       <Modal
         animationType="fade"
         transparent={true}

@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../configBD/BD');
-// Import the middleware functions from your auth.js file
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
-// Obtenir tous les livres (accessible à tous)
+// recupération de tous les livres
 router.get('/', async (req, res) => {
   try {
     const [books] = await pool.query('SELECT * FROM books');
@@ -14,7 +13,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtenir un livre par ID (accessible à tous)
+// Obtenir un livre par ID
 router.get('/:id', async (req, res) => {
   try {
     const [books] = await pool.query('SELECT * FROM books WHERE id = ?', [req.params.id]);
@@ -29,7 +28,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Ajouter un livre (admin uniquement)
+// Ajouter un livre par admin
 router.post('/', authenticateToken, isAdmin, async (req, res) => {
   try {
     const { title, author, isbn, cover_url, description, genre,total_copies } = req.body;
@@ -55,7 +54,7 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-// Mettre à jour un livre (admin uniquement)
+// modifier un livre par admin
 router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
   try {
     const { title, author, isbn, cover_url, description,genre, total_copies, available_copies } = req.body;
@@ -71,20 +70,20 @@ router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-// Supprimer un livre (admin uniquement)
+// Supprimer un livre par admin
 router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
   try {
     const bookId = req.params.id;
     console.log('Attempting to delete book with ID:', bookId);
     
-    // First check if book exists
+ 
     const [bookCheck] = await pool.query('SELECT id FROM books WHERE id = ?', [bookId]);
     
     if (bookCheck.length === 0) {
       return res.status(404).json({ message: 'Book not found' });
     }
     
-    // Check for active loans
+    //verifier si deja emprunter
     const [activeLoans] = await pool.query(
       'SELECT * FROM loans WHERE book_id = ? AND status = "active"',
       [bookId]
@@ -97,10 +96,10 @@ router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
       });
     }
     
-    // Delete all loan records for this book first
+   //supprimer tous les emprunte dece livre
     await pool.query('DELETE FROM loans WHERE book_id = ?', [bookId]);
     
-    // Then delete the book
+    // supprimer book
     await pool.query('DELETE FROM books WHERE id = ?', [bookId]);
     
     res.json({ message: 'Livre supprimé avec succès', id: bookId });
